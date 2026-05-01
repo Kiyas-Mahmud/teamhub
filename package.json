@@ -1,0 +1,18 @@
+{
+  "name": "team-hub",
+  "private": true,
+  "packageManager": "npm@11.6.0",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "turbo dev",
+    "build": "turbo build",
+    "lint": "turbo lint",
+    "seed": "npm run seed --workspace=@team-hub/api"
+  },
+  "devDependencies": {
+    "turbo": "^2.1.1"
+  }
+}

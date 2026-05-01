@@ -1,0 +1,16 @@
+node_modules
+.next
+.turbo
+dist
+build
+.env
+.env.local
+.env.*.local
+*.log
+.DS_Store
+.idea
+.vscode
+coverage
+apps/api/prisma/*.db
+apps/api/prisma/*.db-journal
+.local-postgres/
