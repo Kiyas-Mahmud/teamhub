@@ -1,0 +1,14 @@
+{
+  "name": "@team-hub/shared",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./constants": "./constants.js",
+    "./permissions": "./permissions.js",
+    "./validators": "./validators.js"
+  },
+  "dependencies": {
+    "zod": "^3.23.8"
+  }
+}
