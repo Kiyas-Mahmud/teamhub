@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import goalRoutes from './goal.routes.js';
 import * as workspaceController from '../controllers/workspace.controller.js';
 import { asyncHandler } from '../middleware/asyncHandler.js';
 import { loadMembership } from '../middleware/loadMembership.js';
@@ -50,4 +51,6 @@ router.post(
   validate(acceptInviteSchema),
   asyncHandler(workspaceController.acceptInvite)
 );
+router.use('/:workspaceId/goals', goalRoutes);
+
 export default router;
