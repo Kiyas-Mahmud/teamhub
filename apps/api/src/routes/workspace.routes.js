@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import actionItemRoutes from './actionItem.routes.js';
+import announcementRoutes from './announcement.routes.js';
 import goalRoutes from './goal.routes.js';
 import * as workspaceController from '../controllers/workspace.controller.js';
 import { asyncHandler } from '../middleware/asyncHandler.js';
@@ -54,5 +55,6 @@ router.post(
 );
 router.use('/:workspaceId/goals', goalRoutes);
 router.use('/:workspaceId/action-items', actionItemRoutes);
+router.use('/:workspaceId/announcements', announcementRoutes);
 
 export default router;
