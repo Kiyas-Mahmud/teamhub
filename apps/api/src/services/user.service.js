@@ -1,3 +1,4 @@
+import { deleteFile } from '../lib/cloudinary.js';
 import { NotFoundError } from '../lib/errors.js';
 import { prisma } from '../lib/prisma.js';
 
@@ -25,7 +26,18 @@ export async function getProfile(userId) {
 }
 
 export async function updateProfile(userId, patch) {
-  return prisma.user.update({
+  // If the avatar is being replaced or cleared, capture the previous publicId
+  // so we can delete the old asset on Cloudinary after the DB write succeeds.
+  let previousPublicId = null;
+  if (patch.avatarPublicId !== undefined || patch.avatarUrl !== undefined) {
+    const previous = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { avatarPublicId: true },
+    });
+    previousPublicId = previous?.avatarPublicId || null;
+  }
+
+  const user = await prisma.user.update({
     where: { id: userId },
     data: {
       ...(patch.displayName !== undefined ? { displayName: patch.displayName } : {}),
@@ -36,4 +48,10 @@ export async function updateProfile(userId, patch) {
     },
     select: userSelect,
   });
+
+  if (previousPublicId && previousPublicId !== user.avatarPublicId) {
+    deleteFile(previousPublicId, { resourceType: 'image' }).catch(() => {});
+  }
+
+  return user;
 }
