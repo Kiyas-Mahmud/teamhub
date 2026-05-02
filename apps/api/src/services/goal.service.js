@@ -53,7 +53,12 @@ export const goalSelect = {
   },
 };
 
-async function assertGoalMemberPermission(goalId, userId, role) {
+/**
+ * Loose check: the goal exists in this workspace. The route already required
+ * an authenticated workspace member, so this is enough for collaborative
+ * actions like updating milestone progress or posting activity updates.
+ */
+async function assertGoalInWorkspace(goalId, workspaceId) {
   const goal = await prisma.goal.findUnique({
     where: { id: goalId },
     select: {
@@ -63,14 +68,23 @@ async function assertGoalMemberPermission(goalId, userId, role) {
     },
   });
 
-  if (!goal) {
+  if (!goal || goal.workspaceId !== workspaceId) {
     throw new NotFoundError('Goal not found');
   }
 
-  if (role !== 'ADMIN' && goal.ownerId !== userId) {
-    throw new ForbiddenError('You can only modify your own goals');
-  }
+  return goal;
+}
 
+/**
+ * Strict check: only the goal owner or a workspace admin may pass. Use for
+ * governance actions — renaming/deleting goals, deleting milestones, renaming
+ * a milestone — where one person needs final say.
+ */
+async function assertGoalOwnerOrAdmin(goalId, workspaceId, userId, role) {
+  const goal = await assertGoalInWorkspace(goalId, workspaceId);
+  if (role !== 'ADMIN' && goal.ownerId !== userId) {
+    throw new ForbiddenError('Only the goal owner or an admin can do this');
+  }
   return goal;
 }
 
@@ -144,11 +158,7 @@ export async function getGoal({ workspaceId, goalId }) {
 }
 
 export async function updateGoal({ workspaceId, goalId, userId, role, patch }) {
-  const goal = await assertGoalMemberPermission(goalId, userId, role);
-
-  if (goal.workspaceId !== workspaceId) {
-    throw new NotFoundError('Goal not found');
-  }
+  await assertGoalOwnerOrAdmin(goalId, workspaceId, userId, role);
 
   const updated = await prisma.goal.update({
     where: { id: goalId },
@@ -167,11 +177,7 @@ export async function updateGoal({ workspaceId, goalId, userId, role, patch }) {
 }
 
 export async function deleteGoal({ workspaceId, goalId, userId, role }) {
-  const goal = await assertGoalMemberPermission(goalId, userId, role);
-
-  if (goal.workspaceId !== workspaceId) {
-    throw new NotFoundError('Goal not found');
-  }
+  await assertGoalOwnerOrAdmin(goalId, workspaceId, userId, role);
 
   await prisma.goal.delete({
     where: { id: goalId },
@@ -180,12 +186,10 @@ export async function deleteGoal({ workspaceId, goalId, userId, role }) {
   emitToWorkspace(workspaceId, 'goal:deleted', { id: goalId });
 }
 
-export async function createMilestone({ workspaceId, goalId, userId, role, input }) {
-  const goal = await assertGoalMemberPermission(goalId, userId, role);
-
-  if (goal.workspaceId !== workspaceId) {
-    throw new NotFoundError('Goal not found');
-  }
+export async function createMilestone({ workspaceId, goalId, input }) {
+  // Any workspace member can add milestones to any goal — `milestone:create`
+  // is granted to MEMBER in the permission matrix.
+  await assertGoalInWorkspace(goalId, workspaceId);
 
   const milestone = await prisma.milestone.create({
     data: {
@@ -201,10 +205,12 @@ export async function createMilestone({ workspaceId, goalId, userId, role, input
 }
 
 export async function updateMilestone({ workspaceId, goalId, milestoneId, userId, role, patch }) {
-  const goal = await assertGoalMemberPermission(goalId, userId, role);
-
-  if (goal.workspaceId !== workspaceId) {
-    throw new NotFoundError('Goal not found');
+  // Renaming a milestone is governance — owner/admin only.
+  // Updating progress is collaborative tracking — any workspace member.
+  if (patch.title !== undefined) {
+    await assertGoalOwnerOrAdmin(goalId, workspaceId, userId, role);
+  } else {
+    await assertGoalInWorkspace(goalId, workspaceId);
   }
 
   const milestone = await prisma.milestone.findFirst({
@@ -235,11 +241,7 @@ export async function updateMilestone({ workspaceId, goalId, milestoneId, userId
 }
 
 export async function deleteMilestone({ workspaceId, goalId, milestoneId, userId, role }) {
-  const goal = await assertGoalMemberPermission(goalId, userId, role);
-
-  if (goal.workspaceId !== workspaceId) {
-    throw new NotFoundError('Goal not found');
-  }
+  await assertGoalOwnerOrAdmin(goalId, workspaceId, userId, role);
 
   await prisma.milestone.deleteMany({
     where: {
