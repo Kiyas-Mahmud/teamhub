@@ -19,6 +19,7 @@ import { StatusBadge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Drawer } from '@/components/ui/Drawer';
 import { FormField, Input, Select, Textarea } from '@/components/ui/Input';
+import { MilestoneProgressBar } from '@/components/ui/MilestoneProgressBar';
 import { useGoalsStore } from '@/stores/goalsStore';
 import { useWorkspaceStore } from '@/stores/workspaceStore';
 
@@ -201,7 +202,7 @@ export default function GoalDetailPage({ params }) {
                     <p className="min-w-0 flex-1 truncate text-sm font-medium text-fg">
                       {milestone.title}
                     </p>
-                    <span className="text-xs font-medium text-accent">
+                    <span className="text-xs font-semibold text-accent tabular-nums">
                       {milestone.progress}%
                     </span>
                     <button
@@ -213,22 +214,15 @@ export default function GoalDetailPage({ params }) {
                       <X className="h-3 w-3" />
                     </button>
                   </div>
-                  <input
-                    type="range"
-                    min="0"
-                    max="100"
-                    value={milestone.progress}
-                    onChange={(e) =>
-                      updateMilestone(params.workspaceId, params.goalId, milestone.id, {
-                        progress: Number(e.target.value),
-                      }).catch(() => {})
-                    }
-                    className="mt-2 w-full accent-[color:var(--accent)]"
-                  />
-                  <div className="mt-1 h-1 overflow-hidden rounded-full bg-surfaceHover">
-                    <div
-                      className="h-full rounded-full bg-accent transition-all"
-                      style={{ width: `${milestone.progress}%` }}
+                  <div className="mt-3">
+                    <MilestoneProgressBar
+                      value={milestone.progress}
+                      ariaLabel={`Progress for ${milestone.title}`}
+                      onChange={(next) =>
+                        updateMilestone(params.workspaceId, params.goalId, milestone.id, {
+                          progress: next,
+                        }).catch(() => {})
+                      }
                     />
                   </div>
                 </div>
