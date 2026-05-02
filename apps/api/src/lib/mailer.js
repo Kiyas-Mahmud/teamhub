@@ -18,6 +18,49 @@ const transporter = hasMailerConfig
     })
   : null;
 
+// Module-scope mailer health state. Surfaced via /api/health and updated
+// by the boot-time verify() call as well as runtime send failures.
+const mailerStatus = {
+  configured: Boolean(hasMailerConfig),
+  ready: false,
+  lastError: null,
+  verifiedAt: null,
+};
+
+if (transporter) {
+  transporter.verify((err) => {
+    if (err) {
+      mailerStatus.ready = false;
+      mailerStatus.lastError = err.message || String(err);
+      console.error('[mailer] SMTP verification FAILED:', {
+        message: err.message,
+        code: err.code,
+        response: err.response,
+      });
+      console.error(
+        '[mailer] Hint: Gmail requires a 16-char app password (with 2FA enabled). ' +
+          'If you just edited .env, restart the API to pick up the new values.'
+      );
+    } else {
+      mailerStatus.ready = true;
+      mailerStatus.lastError = null;
+      mailerStatus.verifiedAt = new Date().toISOString();
+      console.log(
+        `[mailer] SMTP ready (${process.env.SMTP_HOST}:${process.env.SMTP_PORT} as ${process.env.SMTP_USER})`
+      );
+    }
+  });
+} else {
+  console.warn(
+    '[mailer] SMTP not configured — invite/mention emails will be skipped. ' +
+      'Set SMTP_HOST / SMTP_PORT / SMTP_USER / SMTP_PASS in apps/api/.env to enable.'
+  );
+}
+
+export function getMailerStatus() {
+  return { ...mailerStatus };
+}
+
 function escapeHtml(value = '') {
   return String(value)
     .replace(/&/g, '&amp;')
@@ -80,14 +123,20 @@ async function sendMail({ to, subject, html }) {
 }
 
 /**
- * Fire-and-forget email send. Never throws; logs failures.
- * Use this from request handlers so SMTP issues don't break the user-facing flow.
+ * Fire-and-forget email send. Never throws; logs failures with full context
+ * and updates mailerStatus.lastError so /api/health reflects the latest state.
  */
-function sendInBackground(promiseFactory, label) {
+function sendInBackground(promiseFactory, { label, to }) {
   Promise.resolve()
     .then(promiseFactory)
     .catch((error) => {
-      console.error(`[mailer] ${label} failed:`, error?.message || error);
+      console.error(`[mailer] ${label} → ${to} failed:`, {
+        message: error?.message,
+        code: error?.code,
+        response: error?.response,
+      });
+      mailerStatus.ready = false;
+      mailerStatus.lastError = error?.message || String(error);
     });
 }
 
@@ -100,11 +149,11 @@ export const mailer = {
       intro: `${safeInviter} invited you to collaborate on <strong>${safeWorkspace}</strong> in Team Hub. Accept to start tracking goals, action items, and announcements together.`,
       ctaLabel: 'Accept invitation',
       ctaUrl: inviteLink,
-      footer: 'This invite expires in 7 days. Ignore this email if you weren\'t expecting it.',
+      footer: "This invite expires in 7 days. Ignore this email if you weren't expecting it.",
     });
     sendInBackground(
       () => sendMail({ to, subject: `Invitation to ${workspaceName}`, html }),
-      'workspace invite'
+      { label: 'workspace invite', to }
     );
   },
 
@@ -122,7 +171,7 @@ export const mailer = {
     });
     sendInBackground(
       () => sendMail({ to, subject: `${authorName} mentioned you in ${workspaceName}`, html }),
-      'mention email'
+      { label: 'mention email', to }
     );
   },
 };

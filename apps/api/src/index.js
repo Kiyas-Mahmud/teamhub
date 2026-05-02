@@ -7,6 +7,7 @@ import helmet from 'helmet';
 import morgan from 'morgan';
 import routes from './routes/index.js';
 import { errorHandler } from './middleware/errorHandler.js';
+import { swaggerServe, swaggerSetup } from './docs/swagger.js';
 import { initSocket } from './sockets/index.js';
 
 const app = express();
@@ -23,6 +24,7 @@ app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+app.use('/api/docs', swaggerServe, swaggerSetup);
 app.use('/api', routes);
 app.use(errorHandler);
 
