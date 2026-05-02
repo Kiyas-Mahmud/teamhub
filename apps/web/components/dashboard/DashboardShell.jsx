@@ -16,7 +16,9 @@ import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { Avatar } from '@/components/ui/Avatar';
 import { ThemeToggle } from '@/components/ui/ThemeToggle';
+import { NotificationBell } from '@/components/dashboard/NotificationBell';
 import { useAuthStore } from '@/stores/authStore';
+import { useNotificationsStore } from '@/stores/notificationsStore';
 import { useWorkspaceStore } from '@/stores/workspaceStore';
 
 const primaryLinks = [
@@ -33,10 +35,20 @@ export function DashboardShell({ children }) {
   const logout = useAuthStore((state) => state.logout);
   const workspaces = useWorkspaceStore((state) => state.items);
   const fetchWorkspaces = useWorkspaceStore((state) => state.fetchWorkspaces);
+  const fetchNotifications = useNotificationsStore((state) => state.fetchAll);
+  const resetNotifications = useNotificationsStore((state) => state.reset);
 
   useEffect(() => {
     fetchWorkspaces().catch(() => toast.error('Could not load workspaces'));
   }, [fetchWorkspaces]);
+
+  useEffect(() => {
+    if (user?.id) {
+      fetchNotifications();
+    } else {
+      resetNotifications();
+    }
+  }, [user?.id, fetchNotifications, resetNotifications]);
 
   useEffect(() => setMobileOpen(false), [pathname]);
 
@@ -103,6 +115,7 @@ export function DashboardShell({ children }) {
             </span>
           </div>
           <div className="flex items-center gap-1">
+            <NotificationBell />
             <ThemeToggle />
             <button
               type="button"

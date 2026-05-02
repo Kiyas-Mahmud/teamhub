@@ -27,3 +27,20 @@ export async function listNotifications(userId) {
     take: 20,
   });
 }
+
+export async function markRead(userId, notificationId) {
+  // Scope by userId so a user can never mark someone else's notification.
+  const result = await prisma.notification.updateMany({
+    where: { id: notificationId, userId },
+    data: { read: true },
+  });
+  return { updated: result.count };
+}
+
+export async function markAllRead(userId) {
+  const result = await prisma.notification.updateMany({
+    where: { userId, read: false },
+    data: { read: true },
+  });
+  return { updated: result.count };
+}

@@ -1,7 +1,7 @@
 'use client';
 
 import { BarChart3, Bell, CheckSquare, LayoutGrid, Target, Users } from 'lucide-react';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import { toast } from 'sonner';
 import { Avatar } from '@/components/ui/Avatar';
@@ -11,6 +11,7 @@ import { useSocketSubscribe } from '@/hooks/useSocketSubscribe';
 import { useActionItemsStore } from '@/stores/actionItemsStore';
 import { useAnnouncementsStore } from '@/stores/announcementsStore';
 import { useGoalsStore } from '@/stores/goalsStore';
+import { useNotificationsStore } from '@/stores/notificationsStore';
 import { usePresenceStore } from '@/stores/presenceStore';
 import { useWorkspaceStore } from '@/stores/workspaceStore';
 
@@ -25,6 +26,7 @@ const sections = [
 
 export function WorkspaceShell({ workspaceId, children }) {
   const pathname = usePathname();
+  const router = useRouter();
   const workspace = useWorkspaceStore((state) => state.currentWorkspace);
   const fetchWorkspace = useWorkspaceStore((state) => state.fetchWorkspace);
   const onlineUserIds = usePresenceStore((state) => state.onlineUserIds);
@@ -81,6 +83,19 @@ export function WorkspaceShell({ workspaceId, children }) {
   useSocketSubscribe('presence:offline', ({ userId }) =>
     usePresenceStore.getState().remove(userId)
   );
+  useSocketSubscribe('notification:new', (notification) => {
+    if (!notification?.id) return;
+    useNotificationsStore.getState().prepend(notification);
+    toast.message(notification.title || 'New notification', {
+      description: notification.body || undefined,
+      action: notification.link
+        ? {
+            label: 'Open',
+            onClick: () => router.push(notification.link),
+          }
+        : undefined,
+    });
+  });
 
   const memberships = workspace?.memberships || [];
   const onlineCount = memberships.filter((m) => onlineUserIds.includes(m.user.id)).length;
