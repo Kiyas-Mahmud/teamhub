@@ -42,9 +42,14 @@ function removePresence(workspaceId, userId) {
 }
 
 export function initSocket(httpServer) {
+  const origins = (process.env.CLIENT_URL || '')
+    .split(',')
+    .map((value) => value.trim())
+    .filter(Boolean);
+
   io = new Server(httpServer, {
     cors: {
-      origin: process.env.CLIENT_URL,
+      origin: origins.length ? origins : true,
       credentials: true,
     },
   });

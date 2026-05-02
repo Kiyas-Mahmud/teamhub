@@ -6,6 +6,8 @@
   "scripts": {
     "dev": "node --watch src/index.js",
     "start": "prisma migrate deploy && node src/index.js",
+    "build": "prisma generate",
+    "postinstall": "prisma generate",
     "lint": "node -e \"console.log('No lint configured yet')\"",
     "seed": "prisma db seed",
     "prisma:generate": "prisma generate"

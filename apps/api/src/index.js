@@ -12,9 +12,22 @@ import { initSocket } from './sockets/index.js';
 
 const app = express();
 
+// Railway / any reverse proxy: required for `secure` cookies and req.ip.
+app.set('trust proxy', 1);
+
+const allowedOrigins = (process.env.CLIENT_URL || '')
+  .split(',')
+  .map((value) => value.trim())
+  .filter(Boolean);
+
 app.use(
   cors({
-    origin: process.env.CLIENT_URL,
+    origin(origin, cb) {
+      if (!origin) return cb(null, true);
+      if (allowedOrigins.length === 0) return cb(null, true);
+      if (allowedOrigins.includes(origin)) return cb(null, true);
+      return cb(new Error(`Origin ${origin} not allowed by CORS`));
+    },
     credentials: true,
   })
 );
