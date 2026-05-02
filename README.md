@@ -4,6 +4,26 @@ A real-time team collaboration platform where teams manage shared goals, post an
 
 ---
 
+## Live Demo
+
+| Service | URL |
+| ------- | --- |
+| Web app | https://teamhubweb-production.up.railway.app |
+| API     | https://teamhubapi-production.up.railway.app |
+| API docs (Swagger) | https://teamhubapi-production.up.railway.app/api/docs |
+| API health | https://teamhubapi-production.up.railway.app/api/health |
+
+### Test Account
+
+```
+Email:    demo@teamup.com
+Password: Demo@123
+```
+
+This account is pre-registered as an ADMIN of a demo workspace. Sign in at the web URL above to explore goals, action items, announcements, members, and analytics. To exercise role-based access, register a second account from a private window and have the demo admin invite it as a MEMBER.
+
+---
+
 ## Stack
 
 | Layer        | Technology                                    |
@@ -120,10 +140,20 @@ npm run seed       # seed the database (run from apps/api)
 - Avatar uploads via Cloudinary; default initials avatar on register
 - Dark / light theme with system-preference detection
 
-### Advanced
+### Advanced (the two required advanced features)
 
-- **Optimistic UI** — Zustand stores apply mutations instantly and roll back on failure
-- **Advanced RBAC** — shared permission matrix enforced by API middleware and UI gates
+**1. Optimistic UI with rollback on failure**
+
+Every mutation in the app (creating a goal, dragging an action item across the Kanban board, posting a comment, toggling a reaction, updating milestone progress, etc.) updates the UI **instantly** before the API call resolves. State is owned by Zustand stores in [apps/web/stores/](apps/web/stores/) — each mutating action takes a snapshot of the previous state, applies the change locally, dispatches the network request, and on failure restores the snapshot and surfaces a toast. The user perceives every action as zero-latency. This is most visible on the action-items Kanban (drag a card → it sticks to the new column instantly; if the API returns an error, the card snaps back).
+
+**2. Advanced Role-Based Access Control (RBAC)**
+
+A single permission matrix in [packages/shared/permissions.js](packages/shared/permissions.js) defines exactly what each role (`ADMIN`, `MEMBER`) can do, action-by-action (e.g. `announcement:pin`, `milestone:edit_any`, `analytics:export`). The matrix is consumed in two places:
+
+- **API middleware** — every protected route uses `requireAuth` + `requirePermission(action)` ([apps/api/src/middleware/requirePermission.js](apps/api/src/middleware/requirePermission.js)). Members cannot bypass the UI by hitting the API directly; the request is rejected with 403.
+- **UI gates** — the [`<Can>`](apps/web/components/Can.jsx) component hides admin-only buttons (invite member, pin announcement, change role) for non-admins.
+
+The two layers are kept in sync because they read the same shared module. Adding a new permission requires editing one file.
 
 ### Bonus
 

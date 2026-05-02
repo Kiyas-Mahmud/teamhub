@@ -5,29 +5,29 @@ import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
 
 async function main() {
-  const demoPasswordHash = await bcrypt.hash('Demo1234!', 12);
+  const demoPasswordHash = await bcrypt.hash('Demo@123', 12);
 
   const demoUser = await prisma.user.upsert({
-    where: { email: 'demo@teamhub.app' },
+    where: { email: 'demo@teamup.com' },
     update: {
       displayName: 'Demo Admin',
       passwordHash: demoPasswordHash,
     },
     create: {
-      email: 'demo@teamhub.app',
+      email: 'demo@teamup.com',
       displayName: 'Demo Admin',
       passwordHash: demoPasswordHash,
     },
   });
 
   const memberUser = await prisma.user.upsert({
-    where: { email: 'member@teamhub.app' },
+    where: { email: 'member@teamup.com' },
     update: {
       displayName: 'Teammate Member',
       passwordHash: demoPasswordHash,
     },
     create: {
-      email: 'member@teamhub.app',
+      email: 'member@teamup.com',
       displayName: 'Teammate Member',
       passwordHash: demoPasswordHash,
     },
