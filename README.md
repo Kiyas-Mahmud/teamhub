@@ -20,7 +20,7 @@ Email:    demo@teamup.com
 Password: Demo@123
 ```
 
-This account is pre-registered as an ADMIN of a demo workspace. Sign in at the web URL above to explore goals, action items, announcements, members, and analytics. To exercise role-based access, register a second account from a private window and have the demo admin invite it as a MEMBER.
+Sign in at the web URL above with these credentials to explore the live app — goals, action items, announcements, members, analytics, and the real-time + role-based features.
 
 ---
 
