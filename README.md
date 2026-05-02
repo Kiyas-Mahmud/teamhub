@@ -6,20 +6,20 @@ A real-time team collaboration platform where teams manage shared goals, post an
 
 ## Stack
 
-| Layer        | Technology                                   |
-| ------------ | -------------------------------------------- |
-| Monorepo     | Turborepo + npm workspaces                   |
-| Frontend     | Next.js 14 (App Router, JavaScript)          |
-| Styling      | Tailwind CSS                                 |
-| State        | Zustand                                      |
-| Backend      | Node.js + Express.js (REST)                  |
-| Database     | PostgreSQL + Prisma ORM                      |
-| Auth         | JWT (access + refresh) in `httpOnly` cookies |
-| Real-time    | Socket.io                                    |
-| File storage | Cloudinary (avatars + attachments)           |
-| Email        | Nodemailer (invites + @mention notifications)|
-| API docs     | Swagger / OpenAPI at `/api/docs`             |
-| Deployment   | Railway (web + api as separate services)     |
+| Layer        | Technology                                    |
+| ------------ | --------------------------------------------- |
+| Monorepo     | Turborepo + npm workspaces                    |
+| Frontend     | Next.js 14 (App Router, JavaScript)           |
+| Styling      | Tailwind CSS                                  |
+| State        | Zustand                                       |
+| Backend      | Node.js + Express.js (REST)                   |
+| Database     | PostgreSQL + Prisma ORM                       |
+| Auth         | JWT (access + refresh) in `httpOnly` cookies  |
+| Real-time    | Socket.io                                     |
+| File storage | Cloudinary (avatars + attachments)            |
+| Email        | Nodemailer (invites + @mention notifications) |
+| API docs     | Swagger / OpenAPI at `/api/docs`              |
+| Deployment   | Railway (web + api as separate services)      |
 
 ---
 
@@ -158,9 +158,9 @@ The app is designed to deploy on Railway as two services backed by a PostgreSQL 
 
 ## Known Limitations
 
-- No automated test suite (manual smoke testing was used as the quality gate).
-- Avatar storage requires Cloudinary; without credentials, uploads fall back to initials avatars only.
-- Email delivery requires SMTP; without it, invites and mention notifications are silently skipped (no user-facing failure).
+- **Email delivery in production:** Email invites and @mention notifications use Gmail SMTP via Nodemailer. The mailer is verified working in local development. In the deployed environment, the hosting provider's free-tier network policy blocks outbound SMTP (ports 587 and 465 both time out), so emails do not leave the container. The mailer code is unchanged; running on a host without SMTP egress restrictions, or switching the SMTP credentials to a transactional email provider that uses HTTPS (such as Resend, Brevo, or SendGrid), delivers mail correctly with no code change. The current mailer state is reported live at `GET /api/health`.
+- **Automated tests** are not part of this submission. The features were validated through structured manual smoke testing across all flows (auth, workspaces, goals, action items, announcements, real-time, RBAC, optimistic UI, theme, analytics).
+- **Avatar fallback:** When Cloudinary credentials are not configured, avatar uploads fall back to a generated initials avatar. No user-facing failure.
 
 ---
 
