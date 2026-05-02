@@ -9,6 +9,7 @@ import { TabsNav } from '@/components/ui/Tabs';
 import { socket } from '@/lib/socket';
 import { useSocketSubscribe } from '@/hooks/useSocketSubscribe';
 import { useActionItemsStore } from '@/stores/actionItemsStore';
+import { useAnnouncementsStore } from '@/stores/announcementsStore';
 import { useGoalsStore } from '@/stores/goalsStore';
 import { usePresenceStore } from '@/stores/presenceStore';
 import { useWorkspaceStore } from '@/stores/workspaceStore';
@@ -46,7 +47,6 @@ export function WorkspaceShell({ workspaceId, children }) {
   useSocketSubscribe('goal:created', (goal) => useGoalsStore.getState().upsertFromSocket(goal));
   useSocketSubscribe('goal:updated', (goal) => useGoalsStore.getState().upsertFromSocket(goal));
   useSocketSubscribe('goal:deleted', ({ id }) => useGoalsStore.getState().removeFromSocket(id));
-
   useSocketSubscribe('actionItem:created', (item) =>
     useActionItemsStore.getState().upsertFromSocket(item)
   );
@@ -59,7 +59,23 @@ export function WorkspaceShell({ workspaceId, children }) {
   useSocketSubscribe('actionItem:deleted', ({ id }) =>
     useActionItemsStore.getState().removeFromSocket(id)
   );
-
+  useSocketSubscribe('announcement:created', (a) =>
+    useAnnouncementsStore.getState().upsertFromSocket(a)
+  );
+  useSocketSubscribe('announcement:updated', (a) => {
+    if (a?.deleted) {
+      return useAnnouncementsStore
+        .getState()
+        .setAll(useAnnouncementsStore.getState().items.filter((i) => i.id !== a.id));
+    }
+    return useAnnouncementsStore.getState().upsertFromSocket(a);
+  });
+  useSocketSubscribe('announcement:commented', () => {
+    useAnnouncementsStore.getState().fetchAnnouncements(workspaceId).catch(() => {});
+  });
+  useSocketSubscribe('announcement:reacted', (event) =>
+    useAnnouncementsStore.getState().mergeReactionEvent(event)
+  );
   useSocketSubscribe('presence:list', ({ users }) => usePresenceStore.getState().setList(users));
   useSocketSubscribe('presence:online', ({ userId }) => usePresenceStore.getState().add(userId));
   useSocketSubscribe('presence:offline', ({ userId }) =>

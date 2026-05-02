@@ -180,8 +180,8 @@ model Announcement {
   authorId    String
   title       String
   contentHtml String
-  attachmentUrl String?
-  attachmentPublicId String?
+  /// Array of { url, publicId, name, size, type }
+  attachments Json       @default("[]")
   pinned      Boolean    @default(false)
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
