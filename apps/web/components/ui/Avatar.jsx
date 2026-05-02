@@ -20,6 +20,7 @@ export function Avatar({ src, alt, name, size = 'md', online = false, className 
   const initial = (name || alt || '?').slice(0, 1).toUpperCase();
   const sizeClass = sizes[size];
   const bg = colorFor(name || alt || '?');
+  const isLocalPreview = typeof src === 'string' && /^(blob:|data:)/.test(src);
 
   return (
     <span className={clsx('relative inline-flex shrink-0', className)}>
@@ -29,6 +30,7 @@ export function Avatar({ src, alt, name, size = 'md', online = false, className 
           src={src}
           width={80}
           height={80}
+          unoptimized={isLocalPreview}
           className={clsx(sizeClass, 'rounded-full object-cover')}
         />
       ) : (

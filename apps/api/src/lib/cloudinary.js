@@ -1,4 +1,5 @@
 import { v2 as cloudinary } from 'cloudinary';
+import { AppError } from './errors.js';
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -21,6 +22,14 @@ export function isCloudinaryConfigured() {
  * Returns the signature plus everything the client needs to call /upload.
  */
 export function generateSignature({ folder, publicId, transformation } = {}) {
+  if (!isCloudinaryConfigured()) {
+    throw new AppError(
+      'Cloudinary is not configured on the API server',
+      503,
+      'CLOUDINARY_NOT_CONFIGURED'
+    );
+  }
+
   const timestamp = Math.floor(Date.now() / 1000);
   const paramsToSign = {
     timestamp,
