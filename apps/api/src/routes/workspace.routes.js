@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import actionItemRoutes from './actionItem.routes.js';
 import goalRoutes from './goal.routes.js';
 import * as workspaceController from '../controllers/workspace.controller.js';
 import { asyncHandler } from '../middleware/asyncHandler.js';
@@ -52,5 +53,6 @@ router.post(
   asyncHandler(workspaceController.acceptInvite)
 );
 router.use('/:workspaceId/goals', goalRoutes);
+router.use('/:workspaceId/action-items', actionItemRoutes);
 
 export default router;

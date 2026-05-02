@@ -8,6 +8,7 @@ import { Avatar } from '@/components/ui/Avatar';
 import { TabsNav } from '@/components/ui/Tabs';
 import { socket } from '@/lib/socket';
 import { useSocketSubscribe } from '@/hooks/useSocketSubscribe';
+import { useActionItemsStore } from '@/stores/actionItemsStore';
 import { useGoalsStore } from '@/stores/goalsStore';
 import { usePresenceStore } from '@/stores/presenceStore';
 import { useWorkspaceStore } from '@/stores/workspaceStore';
@@ -45,6 +46,20 @@ export function WorkspaceShell({ workspaceId, children }) {
   useSocketSubscribe('goal:created', (goal) => useGoalsStore.getState().upsertFromSocket(goal));
   useSocketSubscribe('goal:updated', (goal) => useGoalsStore.getState().upsertFromSocket(goal));
   useSocketSubscribe('goal:deleted', ({ id }) => useGoalsStore.getState().removeFromSocket(id));
+
+  useSocketSubscribe('actionItem:created', (item) =>
+    useActionItemsStore.getState().upsertFromSocket(item)
+  );
+  useSocketSubscribe('actionItem:updated', (item) =>
+    useActionItemsStore.getState().upsertFromSocket(item)
+  );
+  useSocketSubscribe('actionItem:statusChanged', (item) =>
+    useActionItemsStore.getState().upsertFromSocket(item)
+  );
+  useSocketSubscribe('actionItem:deleted', ({ id }) =>
+    useActionItemsStore.getState().removeFromSocket(id)
+  );
+
   useSocketSubscribe('presence:list', ({ users }) => usePresenceStore.getState().setList(users));
   useSocketSubscribe('presence:online', ({ userId }) => usePresenceStore.getState().add(userId));
   useSocketSubscribe('presence:offline', ({ userId }) =>
