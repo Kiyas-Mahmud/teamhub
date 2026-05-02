@@ -27,7 +27,7 @@ export default function AnalyticsPage({ params }) {
   async function downloadCsv() {
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/workspaces/${params.workspaceId}/analytics/export`,
+        `/api/workspaces/${params.workspaceId}/analytics/export`,
         { credentials: 'include' }
       );
       if (!response.ok) throw new Error('Could not export analytics');

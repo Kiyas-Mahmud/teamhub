@@ -1,6 +1,8 @@
 import { io } from 'socket.io-client';
 
-export const socket = io(process.env.NEXT_PUBLIC_SOCKET_URL, {
+// No URL → connects to current origin. Next.js rewrites in next.config.js
+// proxy /socket.io/* to the API service so the WebSocket stays first-party.
+export const socket = io({
   autoConnect: false,
   withCredentials: true,
   transports: ['websocket'],

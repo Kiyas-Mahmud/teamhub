@@ -6,7 +6,9 @@ export class ApiError extends Error {
   }
 }
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL;
+// Always relative — Next.js rewrites in next.config.js proxy /api/* to the
+// API service server-side, keeping auth cookies first-party.
+const API_BASE = '';
 
 async function request(path, options = {}, retried = false) {
   const response = await fetch(`${API_BASE}/api${path}`, {
