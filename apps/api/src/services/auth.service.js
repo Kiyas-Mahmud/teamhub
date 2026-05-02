@@ -12,6 +12,11 @@ export const safeUserSelect = {
   updatedAt: true,
 };
 
+function defaultAvatarUrl(seed) {
+  const safe = encodeURIComponent((seed || 'user').trim() || 'user');
+  return `https://api.dicebear.com/7.x/initials/svg?seed=${safe}&backgroundType=gradientLinear&fontWeight=600`;
+}
+
 function refreshTokenExpiryDate() {
   return new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
 }
@@ -43,6 +48,7 @@ export async function register({ email, password, displayName }) {
       email,
       passwordHash,
       displayName,
+      avatarUrl: defaultAvatarUrl(displayName || email),
     },
     select: safeUserSelect,
   });

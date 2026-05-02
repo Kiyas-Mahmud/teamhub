@@ -201,10 +201,21 @@ export async function createMilestone({ workspaceId, goalId, userId, role, input
 }
 
 export async function updateMilestone({ workspaceId, goalId, milestoneId, userId, role, patch }) {
-  const goal = await assertGoalMemberPermission(goalId, userId, role);
+  const goal = await prisma.goal.findUnique({
+    where: { id: goalId },
+    select: { id: true, workspaceId: true, ownerId: true },
+  });
 
-  if (goal.workspaceId !== workspaceId) {
+  if (!goal || goal.workspaceId !== workspaceId) {
     throw new NotFoundError('Goal not found');
+  }
+
+  const isOwnerOrAdmin = role === 'ADMIN' || goal.ownerId === userId;
+  const patchKeys = Object.keys(patch);
+  const progressOnly = patchKeys.length > 0 && patchKeys.every((k) => k === 'progress');
+
+  if (!isOwnerOrAdmin && !progressOnly) {
+    throw new ForbiddenError('You can only update progress on others\' goals');
   }
 
   const milestone = await prisma.milestone.findFirst({
