@@ -1,0 +1,223 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --canvas: #f5f7fb;
+  --bg: #ffffff;
+  --surface: #ffffff;
+  --surface-soft: #f7f8fa;
+  --surface-hover: #f3f4f6;
+
+  /* Translucent surfaces for glass */
+  --glass: rgba(255, 255, 255, 0.62);
+  --glass-strong: rgba(255, 255, 255, 0.78);
+  --glass-soft: rgba(255, 255, 255, 0.45);
+
+  --fg: #0a0a0a;
+  --fg-muted: #404552;
+  --muted: #6b7280;
+  --subtle: #9ca3af;
+
+  --border: rgba(15, 23, 42, 0.08);
+  --border-strong: rgba(15, 23, 42, 0.14);
+  --divider: rgba(15, 23, 42, 0.06);
+
+  --accent: #0d9488;
+  --accent-hover: #0f766e;
+  --accent-soft: rgba(13, 148, 136, 0.08);
+  --accent-contrast: #ffffff;
+
+  --danger: #b91c1c;
+  --danger-soft: rgba(185, 28, 28, 0.08);
+  --warning: #b45309;
+  --warning-soft: rgba(180, 83, 9, 0.10);
+  --success: #15803d;
+  --success-soft: rgba(21, 128, 61, 0.10);
+
+  --shadow-xs: 0 1px 1px rgba(15, 23, 42, 0.04);
+  --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.06);
+  --shadow-md: 0 4px 16px -8px rgba(15, 23, 42, 0.10), 0 1px 2px rgba(15, 23, 42, 0.04);
+  --shadow-popover: 0 12px 32px -12px rgba(15, 23, 42, 0.18), 0 1px 2px rgba(15, 23, 42, 0.06);
+  --shadow-glass: 0 1px 0 rgba(255, 255, 255, 0.55) inset, 0 1px 2px rgba(15, 23, 42, 0.04), 0 8px 24px -12px rgba(15, 23, 42, 0.10);
+
+  --ring: 0 0 0 3px var(--accent-soft);
+}
+
+.dark {
+  --canvas: #07090d;
+  --bg: #0b0e13;
+  --surface: #11151c;
+  --surface-soft: #0e121a;
+  --surface-hover: #161b24;
+
+  --glass: rgba(17, 21, 28, 0.55);
+  --glass-strong: rgba(17, 21, 28, 0.78);
+  --glass-soft: rgba(17, 21, 28, 0.35);
+
+  --fg: #e8eaed;
+  --fg-muted: #b6bac3;
+  --muted: #8a909c;
+  --subtle: #5b6271;
+
+  --border: rgba(255, 255, 255, 0.06);
+  --border-strong: rgba(255, 255, 255, 0.12);
+  --divider: rgba(255, 255, 255, 0.05);
+
+  --accent: #2dd4bf;
+  --accent-hover: #5eead4;
+  --accent-soft: rgba(45, 212, 191, 0.10);
+  --accent-contrast: #04161a;
+
+  --danger: #f87171;
+  --danger-soft: rgba(248, 113, 113, 0.10);
+  --warning: #fbbf24;
+  --warning-soft: rgba(251, 191, 36, 0.10);
+  --success: #4ade80;
+  --success-soft: rgba(74, 222, 128, 0.10);
+
+  --shadow-xs: 0 1px 1px rgba(0, 0, 0, 0.3);
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 4px 16px -8px rgba(0, 0, 0, 0.6), 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-popover: 0 12px 32px -12px rgba(0, 0, 0, 0.7), 0 1px 2px rgba(0, 0, 0, 0.5);
+  --shadow-glass: 0 1px 0 rgba(255, 255, 255, 0.04) inset, 0 1px 2px rgba(0, 0, 0, 0.5), 0 8px 24px -12px rgba(0, 0, 0, 0.5);
+
+  --ring: 0 0 0 3px var(--accent-soft);
+}
+
+* {
+  border-color: var(--border);
+}
+
+html,
+body {
+  min-height: 100%;
+}
+
+body {
+  color: var(--fg);
+  background: var(--canvas);
+  /* Subtle wash so glass surfaces have something to blur */
+  background-image:
+    radial-gradient(60% 50% at 90% 0%, rgba(13, 148, 136, 0.10), transparent 70%),
+    radial-gradient(50% 40% at 0% 100%, rgba(99, 102, 241, 0.08), transparent 70%);
+  background-attachment: fixed;
+  font-feature-settings: 'cv11', 'ss01';
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  letter-spacing: -0.005em;
+}
+
+.dark body {
+  background-image:
+    radial-gradient(60% 50% at 90% 0%, rgba(45, 212, 191, 0.10), transparent 70%),
+    radial-gradient(50% 40% at 0% 100%, rgba(99, 102, 241, 0.10), transparent 70%);
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+textarea {
+  resize: vertical;
+}
+
+::selection {
+  background: var(--accent-soft);
+  color: var(--fg);
+}
+
+/* Glass utility — frosted translucent surface */
+.glass-panel {
+  background: var(--glass);
+  backdrop-filter: blur(20px) saturate(160%);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-glass);
+}
+
+.glass-strong {
+  background: var(--glass-strong);
+  backdrop-filter: blur(24px) saturate(170%);
+  -webkit-backdrop-filter: blur(24px) saturate(170%);
+  border: 1px solid var(--border-strong);
+  box-shadow: var(--shadow-glass);
+}
+
+.glass-bar {
+  background: var(--glass);
+  backdrop-filter: blur(18px) saturate(160%);
+  -webkit-backdrop-filter: blur(18px) saturate(160%);
+}
+
+.glass-soft {
+  background: var(--glass-soft);
+  backdrop-filter: blur(14px) saturate(140%);
+  -webkit-backdrop-filter: blur(14px) saturate(140%);
+  border: 1px solid var(--border);
+}
+
+.scrollbar-fine {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-strong) transparent;
+}
+.scrollbar-fine::-webkit-scrollbar { width: 6px; height: 6px; }
+.scrollbar-fine::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 999px; }
+.scrollbar-fine::-webkit-scrollbar-track { background: transparent; }
+
+.input-base {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  transition: border-color .12s ease, box-shadow .12s ease, background .12s ease;
+}
+.input-base:hover { border-color: var(--border-strong); }
+.input-base:focus,
+.input-base:focus-within {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: var(--ring);
+}
+
+.focus-ring:focus-visible {
+  outline: none;
+  box-shadow: var(--ring);
+}
+
+/* Sonner toast — glass */
+[data-sonner-toaster][data-theme] [data-sonner-toast] {
+  background: var(--glass-strong) !important;
+  backdrop-filter: blur(20px) saturate(170%);
+  -webkit-backdrop-filter: blur(20px) saturate(170%);
+  border: 1px solid var(--border-strong) !important;
+  box-shadow: var(--shadow-popover) !important;
+  color: var(--fg) !important;
+  border-radius: 10px !important;
+}
+[data-sonner-toaster] [data-sonner-toast] [data-title] {
+  color: var(--fg) !important;
+  font-weight: 500;
+  font-size: 13px;
+}
+[data-sonner-toaster] [data-sonner-toast] [data-description] {
+  color: var(--muted) !important;
+  font-size: 12px;
+}
+[data-sonner-toaster] [data-sonner-toast][data-type="success"] [data-icon] svg { color: var(--success); }
+[data-sonner-toaster] [data-sonner-toast][data-type="error"] [data-icon] svg { color: var(--danger); }
+[data-sonner-toaster] [data-sonner-toast][data-type="warning"] [data-icon] svg { color: var(--warning); }
+[data-sonner-toaster] [data-sonner-toast] [data-close-button] {
+  background: var(--surface) !important;
+  border: 1px solid var(--border) !important;
+  color: var(--muted) !important;
+}

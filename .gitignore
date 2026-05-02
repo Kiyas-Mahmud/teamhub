@@ -14,3 +14,6 @@ coverage
 apps/api/prisma/*.db
 apps/api/prisma/*.db-journal
 .local-postgres/
+.claude/
+CLAUDE.md
+ARCHITECTURE.md
