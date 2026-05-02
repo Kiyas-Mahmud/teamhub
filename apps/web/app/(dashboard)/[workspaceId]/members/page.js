@@ -29,29 +29,34 @@ export default function MembersPage({ params }) {
   const onlineUserIds = usePresenceStore((state) => state.onlineUserIds);
   const memberships = workspace?.memberships || [];
 
-  useEffect(() => {
-    fetchWorkspace(params.workspaceId).catch(() => toast.error('Could not load members'));
-  }, [fetchWorkspace, params.workspaceId]);
+  const inviteToken = searchParams.get('invite');
 
   useEffect(() => {
-    const token = searchParams.get('invite');
-    if (!token) return;
-    if (acceptedTokenRef.current === token) return;
-    acceptedTokenRef.current = token;
+    // When arriving via an invite link, the user isn't a member yet — defer
+    // the workspace fetch until acceptInvite has run, otherwise GET 404s.
+    if (inviteToken) return;
+    fetchWorkspace(params.workspaceId).catch(() => toast.error('Could not load members'));
+  }, [fetchWorkspace, params.workspaceId, inviteToken]);
+
+  useEffect(() => {
+    if (!inviteToken) return;
+    if (acceptedTokenRef.current === inviteToken) return;
+    acceptedTokenRef.current = inviteToken;
 
     setAcceptingInvite(true);
-    acceptInvite(params.workspaceId, token)
+    acceptInvite(params.workspaceId, inviteToken)
       .then(() => {
         toast.success('Invitation accepted — welcome to the workspace');
-        // Drop the ?invite=… query param so a refresh doesn't replay it.
         router.replace(pathname);
       })
       .catch((error) => {
         toast.error(error.message || 'Could not accept invite');
         router.replace(pathname);
+        // Fall back to a normal load attempt so the page isn't blank.
+        fetchWorkspace(params.workspaceId).catch(() => {});
       })
       .finally(() => setAcceptingInvite(false));
-  }, [acceptInvite, params.workspaceId, pathname, router, searchParams]);
+  }, [acceptInvite, fetchWorkspace, params.workspaceId, pathname, router, inviteToken]);
 
   async function handleInvite(event) {
     event.preventDefault();

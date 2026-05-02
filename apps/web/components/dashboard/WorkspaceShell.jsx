@@ -1,7 +1,7 @@
 'use client';
 
 import { BarChart3, Bell, CheckSquare, LayoutGrid, Target, Users } from 'lucide-react';
-import { usePathname, useRouter } from 'next/navigation';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useEffect } from 'react';
 import { toast } from 'sonner';
 import { Avatar } from '@/components/ui/Avatar';
@@ -27,13 +27,19 @@ const sections = [
 export function WorkspaceShell({ workspaceId, children }) {
   const pathname = usePathname();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const workspace = useWorkspaceStore((state) => state.currentWorkspace);
   const fetchWorkspace = useWorkspaceStore((state) => state.fetchWorkspace);
   const onlineUserIds = usePresenceStore((state) => state.onlineUserIds);
+  const hasInviteToken = Boolean(searchParams.get('invite'));
 
   useEffect(() => {
+    // Skip the initial workspace fetch when an invite token is present —
+    // the user isn't a member yet, so the request would 404. The members
+    // page handles acceptance and reloads workspace state on success.
+    if (hasInviteToken) return;
     fetchWorkspace(workspaceId).catch(() => toast.error('Could not load this workspace'));
-  }, [fetchWorkspace, workspaceId]);
+  }, [fetchWorkspace, workspaceId, hasInviteToken]);
 
   useEffect(() => {
     socket.emit('workspace:join', workspaceId);
