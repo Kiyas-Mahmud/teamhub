@@ -1,3 +1,4 @@
+import analyticsRoutes from './analytics.routes.js';
 import { Router } from 'express';
 import authRoutes from './auth.routes.js';
 import healthRoutes from './health.routes.js';
@@ -12,5 +13,6 @@ router.use('/auth', authRoutes);
 router.use('/users', userRoutes);
 router.use('/uploads', uploadRoutes);
 router.use('/workspaces', workspaceRoutes);
+router.use('/workspaces/:workspaceId/analytics', analyticsRoutes);
 
 export default router;
